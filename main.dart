@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'partitions_screen.dart';
+import 'reports_screen.dart';
+import 'cranes_certificates_screen.dart';
 
 void main() {
   runApp(const InspectionPetrobelApp());
@@ -30,6 +33,7 @@ class _InspectionPetrobelAppState extends State<InspectionPetrobelApp> {
       locale: _currentLocale,
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Cairo',
       ),
       home: LoginScreen(onToggleLang: _toggleLanguage, currentLang: _currentLocale.languageCode),
     );
@@ -60,6 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
           IconButton(
             icon: const Icon(Icons.language),
             onPressed: widget.onToggleLang,
+            tooltip: isAr ? 'English' : 'عربي',
           ),
         ],
       ),
@@ -101,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HomeScreen(isAdmin: isAdmin, lang: widget.currentLang, onToggleLang: widget.onToggleLang),
+                        builder: (context) => MainNavigationScreen(isAdmin: isAdmin, lang: widget.currentLang, onToggleLang: widget.onToggleLang),
                       ),
                     );
                   },
@@ -116,40 +121,57 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class MainNavigationScreen extends StatefulWidget {
   final bool isAdmin;
   final String lang;
   final VoidCallback onToggleLang;
 
-  const HomeScreen({super.key, required this.isAdmin, required this.lang, required this.onToggleLang});
+  const MainNavigationScreen({super.key, required this.isAdmin, required this.lang, required this.onToggleLang});
+
+  @override
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    bool isAr = lang == 'ar';
+    bool isAr = widget.lang == 'ar';
+
+    final List<Widget> pages = [
+      PartitionsScreen(isAdmin: widget.isAdmin, lang: widget.lang),
+      ReportsScreen(isAdmin: widget.isAdmin, lang: widget.lang),
+      CranesCertificatesScreen(isAdmin: widget.isAdmin, lang: widget.lang),
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(isAr ? 'أقسام التفتيش الهندسي' : 'Inspection Partitions'),
+        title: Text(isAr ? 'التفتيش الهندسي ببتروبيل' : 'Inspection Petrobel'),
         actions: [
           IconButton(
             icon: const Icon(Icons.language),
-            onPressed: onToggleLang,
+            onPressed: widget.onToggleLang,
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          ListTile(
-            leading: const Icon(Icons.folder, color: Colors.blue),
-            title: Text(isAr ? 'فحص المواسير (Pipes)' : 'Pipes Inspection'),
-            subtitle: Text(isAr ? 'رفع التقارير واليوميات' : 'Daily inspection & reports'),
-            onTap: () {},
+      body: pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) => setState(() => _currentIndex = index),
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.folder),
+            label: isAr ? 'الأقسام والشات' : 'Partitions',
           ),
-          ListTile(
-            leading: const Icon(Icons.folder, color: Colors.blue),
-            title: Text(isAr ? 'فحص الهيتر (Heaters)' : 'Heaters Inspection'),
-            subtitle: Text(isAr ? 'رفع التقارير واليوميات' : 'Daily inspection & reports'),
-            onTap: () {},
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.assessment),
+            label: isAr ? 'التقارير' : 'Reports',
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.card_travel),
+            label: isAr ? 'شهادات الأوناش' : 'Cranes Certs',
           ),
         ],
       ),
